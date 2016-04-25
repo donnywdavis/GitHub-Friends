@@ -11,6 +11,7 @@
 @interface DetailViewController () <NSURLSessionDelegate>
 
 @property NSMutableData *receivedData;
+@property NSMutableArray *repos;
 
 @end
 
@@ -18,9 +19,9 @@
 
 #pragma mark - Managing the detail item
 
-- (void)setDetailItem:(id)newDetailItem {
-    if (_detailItem != newDetailItem) {
-        _detailItem = newDetailItem;
+- (void)setFriendRepos:(NSString *)newFriendRepos {
+    if (_friendRepos != newFriendRepos) {
+        _friendRepos = newFriendRepos;
             
         // Update the view.
         [self configureView];
@@ -29,15 +30,9 @@
 
 - (void)configureView {
     // Update the user interface for the detail item.
-    if (self.detailItem) {
-        self.detailDescriptionLabel.text = [self.detailItem description];
-        
-        // Create a string for the URL that we want to access data from
-        NSString *userName = [self.detailItem description];
-        NSString *urlString = [NSString stringWithFormat:@"https://api.github.com/users/%@", userName];
-        
+    if (self.friendRepos) {
         // Create a URL object from our string
-        NSURL *url = [NSURL URLWithString:urlString];
+        NSURL *url = [NSURL URLWithString:self.friendRepos];
         
         // Set up a configuration for the session
         // defaultSessionConfiguration will use the current session configuration from the device
@@ -67,6 +62,27 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - Table View
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.repos.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RepoCell" forIndexPath:indexPath];
+    
+    // Grab the friend object from the array to populate the cell data with
+    NSString *repo = self.repos[indexPath.row];
+    
+    // Populate the friends name
+    cell.textLabel.text = repo;
+    return cell;
+}
+
 #pragma mark - NSURLSessionDelegate
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
@@ -80,10 +96,16 @@
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error {
     if (!error) {
-        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@", [jsonResponse description]);
+        NSArray *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
+        if (jsonResponse) {
+            for (NSDictionary *response in jsonResponse) {
+                [self.repos addObject:response[@"name"]];
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_repos.count - 1 inSection:0];
+                [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+            }
+        }
     } else {
-        NSLog(@"Error url: %@", error);
+        NSLog(@"Error: %@", [error description]);
         
     }
 }
