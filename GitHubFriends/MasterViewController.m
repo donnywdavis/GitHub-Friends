@@ -45,23 +45,19 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)insertNewObject:(id)sender {
-    if (!self.friends) {
-        self.friends = [[NSMutableArray alloc] init];
-    }
-    [self.friends insertObject:[NSDate date] atIndex:0];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
 #pragma mark - Segues
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
+        // Get the index for the selected cell
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSDate *object = self.friends[indexPath.row];
+        // Get the friend object from the array
+        Friend *friend = self.friends[indexPath.row];
+        // Create a controller based on DetailViewController
         DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-        [controller setDetailItem:object];
+        // Pass our selected friend object to the DetailViewController
+        [controller setFriendRepos:friend.reposURL];
+        // Set the left bar button item in the navigation controller to be a back button if necessary
         controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
         controller.navigationItem.leftItemsSupplementBackButton = YES;
     }
@@ -141,12 +137,18 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"FriendCell" forIndexPath:indexPath];
 
+    // Grab the friend object from the array to populate the cell data with
     Friend *friend = self.friends[indexPath.row];
+    
+    // Use the url for the avatar from Github to dislpay a thumbnail image
     NSURL *avatar = [NSURL URLWithString:friend.avatarURL];
     NSData *imageData = [[NSData alloc] initWithContentsOfURL:avatar];
     cell.imageView.image = [UIImage imageWithData:imageData];
+    cell.imageView.layer.masksToBounds = YES;
+    cell.imageView.layer.cornerRadius = 20.0;
+    // Populate the friends name
     cell.textLabel.text = friend.name;
     return cell;
 }
