@@ -8,12 +8,15 @@
 
 #import "MasterViewController.h"
 #import "DetailViewController.h"
+#import "Friend.h"
 
-@interface MasterViewController ()
+@interface MasterViewController () <NSURLSessionDelegate>
 
-@property NSMutableArray *objects;
+@property NSMutableArray *friends;
+@property NSMutableData *receivedData;
 
 - (IBAction)goToNewItemViewController:(id)sender;
+- (void)displayError:(NSString *)error;
 
 @end
 
@@ -23,7 +26,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.objects = [[NSMutableArray alloc] init];
+    self.friends = [[NSMutableArray alloc] init];
     
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
 
@@ -43,10 +46,10 @@
 }
 
 - (void)insertNewObject:(id)sender {
-    if (!self.objects) {
-        self.objects = [[NSMutableArray alloc] init];
+    if (!self.friends) {
+        self.friends = [[NSMutableArray alloc] init];
     }
-    [self.objects insertObject:[NSDate date] atIndex:0];
+    [self.friends insertObject:[NSDate date] atIndex:0];
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
     [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
@@ -56,7 +59,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSDate *object = self.objects[indexPath.row];
+        NSDate *object = self.friends[indexPath.row];
         DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
         [controller setDetailItem:object];
         controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
@@ -82,11 +85,40 @@
     
     // Add an action to handle user input when pressing OK
     UIAlertAction *okAlert = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        // Get the username from the text field on the alert controller
         UITextField *textField = alertController.textFields.firstObject;
-        [_objects addObject:textField.text];
-        NSLog(@"%@", textField.text);
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_objects.count - 1 inSection:0];
-        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+        BOOL alreadyFriends = NO;
+        for (Friend *friend in self.friends) {
+            if ([friend.login isEqualToString:textField.text]) {
+                alreadyFriends = YES;
+            }
+        }
+        
+        if (!alreadyFriends) {
+            // Build our api string with the specified username
+            NSString *urlString = [NSString stringWithFormat:@"https://api.github.com/users/%@", textField.text];
+        
+            // Create a URL object from our string
+            NSURL *url = [NSURL URLWithString:urlString];
+        
+            // Set up a configuration for the session
+            // defaultSessionConfiguration will use the current session configuration from the device
+            NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        
+            // Create the session
+            // mainQueue uses the main thread of the app. All UI work needs to happen on the main thread
+            // This session will exist for the life of the app
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+        
+            // The data task will get the data from the url
+            NSURLSessionDataTask *dataTask = [session dataTaskWithURL:url];
+        
+            // Start the data task to start fetching data from the URL
+            [dataTask resume];
+        } else {
+            [self displayError:[NSString stringWithFormat:@"Already friends with %@", textField.text]];
+        }
     }];
     
     // Add the action(s) to the alertaViewController
@@ -105,14 +137,17 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.objects.count;
+    return self.friends.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
 
-    NSDate *object = self.objects[indexPath.row];
-    cell.textLabel.text = [object description];
+    Friend *friend = self.friends[indexPath.row];
+    NSURL *avatar = [NSURL URLWithString:friend.avatarURL];
+    NSData *imageData = [[NSData alloc] initWithContentsOfURL:avatar];
+    cell.imageView.image = [UIImage imageWithData:imageData];
+    cell.textLabel.text = friend.name;
     return cell;
 }
 
@@ -123,11 +158,52 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [self.objects removeObjectAtIndex:indexPath.row];
+        [self.friends removeObjectAtIndex:indexPath.row];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
     }
+}
+
+#pragma mark - NSURLSessionDelegate
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
+    if (!self.receivedData) {
+        self.receivedData = [[NSMutableData alloc] initWithData:data];
+    } else {
+        [self.receivedData appendData:data];
+    }
+    
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error {
+    if (!error) {
+        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
+        if (jsonResponse) {
+            if (jsonResponse[@"message"]) {
+                [self displayError:jsonResponse[@"message"]];
+            } else {
+                [self.friends addObject:[Friend createFriendWithDictionary:jsonResponse]];
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_friends.count - 1 inSection:0];
+                [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+            }
+        } else {
+            [self displayError:@"User not found"];
+        }
+    }
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
+    completionHandler(NSURLSessionResponseAllow);
+}
+
+#pragma mark - Error handling
+
+- (void)displayError:(NSString *)error {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Danger Will Robinson" message:error preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:nil];
+    [alertController addAction:okAction];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 @end

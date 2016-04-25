@@ -80,9 +80,11 @@
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error {
     if (!error) {
-//        NSLog(@"Download successful! %@", [self.receivedData description]);
         NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
         NSLog(@"%@", [jsonResponse description]);
+    } else {
+        NSLog(@"Error url: %@", error);
+        
     }
 }
 
