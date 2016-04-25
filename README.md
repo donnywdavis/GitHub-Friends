@@ -7,8 +7,8 @@
 * [x] Create a class named Friend and add all of the properties that were received from the github user call. Use the following line to create a URL object for the GitHub API: NSSTring* urlString = [NSString stringWithFormat:@"https://api.github.com/users/%@" , username] // replace username with the user you want to search for.
 * [x] Display the name of the GitHub user(s) in a tableview.
 * [x] Create another UIAlertController for letting the user know an error occurred
-* [ ] Use the "repos_url" object to get the list of repos the selected user has.
-* [ ] Add a tableView to the DetailViewController that contains a cell for every repo that user has in their account.
+* [x] Use the "repos_url" object to get the list of repos the selected user has.
+* [x] Add a tableView to the DetailViewController that contains a cell for every repo that user has in their account.
 
 ### Hard Mode
 Create a detail View Controller called FriendDetailViewController:

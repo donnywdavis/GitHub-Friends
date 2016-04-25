@@ -54,6 +54,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    self.repos = [[NSMutableArray alloc] init];
     [self configureView];
 }
 
@@ -96,7 +97,7 @@
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error {
     if (!error) {
-        NSArray *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
+        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
         if (jsonResponse) {
             for (NSDictionary *response in jsonResponse) {
                 [self.repos addObject:response[@"name"]];
@@ -106,8 +107,8 @@
         }
     } else {
         NSLog(@"Error: %@", [error description]);
-        
     }
+    self.receivedData = nil;
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {

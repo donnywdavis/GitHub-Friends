@@ -192,6 +192,7 @@
         } else {
             [self displayError:@"User not found"];
         }
+        self.receivedData = nil;
     }
 }
 
