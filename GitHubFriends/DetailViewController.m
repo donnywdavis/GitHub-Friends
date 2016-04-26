@@ -79,7 +79,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RepoCell" forIndexPath:indexPath];
     
     // Grab the friend object from the array to populate the cell data with
-    NSString *repo = self.repos[indexPath.row];
+    NSString *repo = self.repos[indexPath.row][@"name"];
     
     // Populate the friends name
     cell.textLabel.text = repo;
@@ -100,15 +100,11 @@
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error {
     if (!error) {
-        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
+        NSArray *jsonResponse = [NSJSONSerialization JSONObjectWithData:self.receivedData options:NSJSONReadingMutableContainers error:nil];
         if (jsonResponse) {
-            int repoCount = 0;
-            for (NSDictionary *response in jsonResponse) {
-                [self.repos addObject:response[@"name"]];
-                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_repos.count - 1 inSection:0];
-                [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-                self.title = [NSString stringWithFormat:@"%@ Repos: %d", response[@"owner"][@"login"], repoCount += 1];
-            }
+            self.repos = [jsonResponse mutableCopy];
+            self.title = [NSString stringWithFormat:@"%@ Repos: %lu", self.repos[0][@"owner"][@"login"], (unsigned long)self.repos.count];
+            [self.tableView reloadData];
         }
     }
     self.receivedData = nil;
