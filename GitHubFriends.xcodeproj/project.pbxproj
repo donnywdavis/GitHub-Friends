@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		41B39E281CCFB1E70090AD50 /* RepoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 41B39E271CCFB1E70090AD50 /* RepoTableViewCell.m */; };
 		41D082E61CCE56AD002DD66E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 41D082E51CCE56AD002DD66E /* main.m */; };
 		41D082E91CCE56AD002DD66E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 41D082E81CCE56AD002DD66E /* AppDelegate.m */; };
 		41D082EC1CCE56AD002DD66E /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41D082EB1CCE56AD002DD66E /* MasterViewController.m */; };
@@ -18,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		41B39E261CCFB1E70090AD50 /* RepoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoTableViewCell.h; sourceTree = "<group>"; };
+		41B39E271CCFB1E70090AD50 /* RepoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RepoTableViewCell.m; sourceTree = "<group>"; };
 		41D082E11CCE56AD002DD66E /* GitHubFriends.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitHubFriends.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41D082E51CCE56AD002DD66E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		41D082E71CCE56AD002DD66E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -72,6 +75,8 @@
 				41D082EB1CCE56AD002DD66E /* MasterViewController.m */,
 				41D082ED1CCE56AD002DD66E /* DetailViewController.h */,
 				41D082EE1CCE56AD002DD66E /* DetailViewController.m */,
+				41B39E261CCFB1E70090AD50 /* RepoTableViewCell.h */,
+				41B39E271CCFB1E70090AD50 /* RepoTableViewCell.m */,
 				41D082F01CCE56AD002DD66E /* Main.storyboard */,
 				41D082F31CCE56AD002DD66E /* Assets.xcassets */,
 				41D082F51CCE56AD002DD66E /* LaunchScreen.storyboard */,
@@ -161,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				41D082E91CCE56AD002DD66E /* AppDelegate.m in Sources */,
+				41B39E281CCFB1E70090AD50 /* RepoTableViewCell.m in Sources */,
 				41D083001CCE86DE002DD66E /* Friend.m in Sources */,
 				41D082EC1CCE56AD002DD66E /* MasterViewController.m in Sources */,
 				41D082E61CCE56AD002DD66E /* main.m in Sources */,

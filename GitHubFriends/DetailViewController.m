@@ -7,6 +7,7 @@
 //
 
 #import "DetailViewController.h"
+#import "RepoTableViewCell.h"
 
 @interface DetailViewController () <NSURLSessionDelegate>
 
@@ -56,6 +57,7 @@
     // Do any additional setup after loading the view, typically from a nib.
     self.title = @"Repos: 0";
     self.repos = [[NSMutableArray alloc] init];
+    [self.tableView registerClass:[RepoTableViewCell class] forCellReuseIdentifier:@"RepoCell"];
 }
 
 - (void)didReceiveMemoryWarning {
