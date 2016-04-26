@@ -56,7 +56,6 @@
     // Do any additional setup after loading the view, typically from a nib.
     self.title = @"Repos: 0";
     self.repos = [[NSMutableArray alloc] init];
-    [self configureView];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -103,12 +102,10 @@
         if (jsonResponse) {
             int repoCount = 0;
             for (NSDictionary *response in jsonResponse) {
-                if (![self.repos containsObject:response[@"name"]]) {
-                    [self.repos addObject:response[@"name"]];
-                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_repos.count - 1 inSection:0];
-                    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-                    self.title = [NSString stringWithFormat:@"%@ Repos: %d", response[@"owner"][@"login"], repoCount += 1];
-                }
+                [self.repos addObject:response[@"name"]];
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_repos.count - 1 inSection:0];
+                [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                self.title = [NSString stringWithFormat:@"%@ Repos: %d", response[@"owner"][@"login"], repoCount += 1];
             }
         }
     }
