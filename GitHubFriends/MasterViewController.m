@@ -150,6 +150,7 @@
     cell.imageView.layer.cornerRadius = 20.0;
     // Populate the friends name
     cell.textLabel.text = friend.name;
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"Repos: %@", friend.publicRepos];
     return cell;
 }
 
@@ -190,7 +191,7 @@
                 [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
             }
         } else {
-            [self displayError:@"User not found"];
+            [self displayError:@"Ruh roh! Something broke."];
         }
         self.receivedData = nil;
     }
